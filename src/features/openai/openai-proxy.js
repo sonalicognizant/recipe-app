@@ -26,8 +26,13 @@ app.post('/api/chat', async (req, res) => {
     );
     res.json({ reply: response.data.choices[0].message.content });
   } catch (error) {
-    console.error('Error communicating with OpenAI:', error);
-    res.status(500).json({ reply: "ooooooooooooooo" });
+    if (error.response && error.response.status === 429) {
+      console.error('Error communicating with OpenAI:', error);
+      res.status(429).json({ reply: "Rate limit reached. Please wait and try again." });
+    } else {
+      console.error('Error communicating with OpenAI:', error);
+      res.status(500).json({ reply: "ooooooooo" });
+    }
   }
 });
 
