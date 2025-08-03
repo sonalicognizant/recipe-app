@@ -6,29 +6,29 @@ const Chatbot = () => {
   ]);
   const [input, setInput] = useState('');
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
     const userMessage = input;
     setMessages([...messages, { from: 'user', text: userMessage }]);
+    setInput('');
 
-    setTimeout(() => {
-      let botResponse = "I'm not sure how to help with that yet.";
-
-      if (/hello|hi|hey/i.test(userMessage)) {
-        botResponse = "Hello! How can I assist you today?";
-      } else if (/recipe/i.test(userMessage)) {
-        botResponse = "Looking for a recipe? Tell me what ingredients you have!";
-      } else if (/pantry/i.test(userMessage)) {
-        botResponse = "I can help you manage your pantry. What would you like to do?";
-      }
-
+    try {
+      const res = await fetch('http://localhost:5001/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage })
+      });
+      const data = await res.json();
       setMessages(msgs => [
         ...msgs,
-        { from: 'Pantry mate', text: botResponse }
+        { from: 'Pantry mate', text: data.reply }
       ]);
-    }, 500);
-
-    setInput('');
+    } catch {
+      setMessages(msgs => [
+        ...msgs,
+        { from: 'Pantry mate', text: "Sorry, I couldn't process your request." }
+      ]);
+    }
   };
 
   return (
